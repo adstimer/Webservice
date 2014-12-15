@@ -3,10 +3,6 @@ package de.ads.timer.webservice.Models.Vertretungsplan;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -35,6 +31,7 @@ public class Vertretung {
 	public String art;
 	@Temporal(TemporalType.DATE)
 	public Date datum;
+
 	public Vertretung() {
 	}
 

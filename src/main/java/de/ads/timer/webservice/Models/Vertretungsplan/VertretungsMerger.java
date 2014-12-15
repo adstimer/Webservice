@@ -13,7 +13,7 @@ public class VertretungsMerger {
 
 	public VertretungsMerger(List<Vertretung> newVertretung) {
 		this.vertretungsRep.findByDatum(newVertretung.get(0).datum);
-		
-		vertretungsRep.save(newVertretung);
+
+		this.vertretungsRep.save(newVertretung);
 	}
 }

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.ads.timer.webservice.Models.Vertretungsplan.Vertretung;
-import de.ads.timer.webservice.Models.Vertretungsplan.VertretungsMerger;
 import de.ads.timer.webservice.Parser.VertretungplanParser;
 import de.ads.timer.webservice.persicetence.VertretungsRepository;
 
@@ -30,12 +29,13 @@ public class VertretungsController {
 	public Iterable<Vertretung> getAll() {
 		return this.vertrtungsRep.findAll();
 	}
-	
+
 	@RequestMapping(value = "date", method = RequestMethod.GET)
 	@ResponseBody
-	public Iterable<Vertretung> getByDate(@RequestParam("date") String dateString) throws ParseException {
+	public Iterable<Vertretung> getByDate(
+			@RequestParam("date") String dateString) throws ParseException {
 		Date date = new SimpleDateFormat("dd.MM.yyyy").parse(dateString);
-		return vertrtungsRep.findByDatum(date);
+		return this.vertrtungsRep.findByDatum(date);
 	}
 
 	@RequestMapping(value = "/upload", method = RequestMethod.GET)
@@ -51,8 +51,9 @@ public class VertretungsController {
 				VertretungplanParser parser = new VertretungplanParser();
 				SAXParserImpl.newInstance(null).parse(file.getInputStream(),
 						parser);
-//				VertretungsMerger merger = new VertretungsMerger(parser.vertretungsList);
-				vertrtungsRep.save(parser.vertretungsList);
+				// VertretungsMerger merger = new
+				// VertretungsMerger(parser.vertretungsList);
+				this.vertrtungsRep.save(parser.vertretungsList);
 				return new Integer(parser.vertretungsList.size()).toString();
 			} catch (Exception e) {
 				return "You failed to upload  => " + e.getMessage();

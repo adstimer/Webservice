@@ -53,7 +53,8 @@ public class VertretungplanParser extends DefaultHandler {
 
 		if (qName.equalsIgnoreCase("div")) {
 			try {
-				this.date = new SimpleDateFormat("dd.MM.YYYY").parse(this.tempVal);
+				this.date = new SimpleDateFormat("dd.MM.YYYY")
+						.parse(this.tempVal);
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
