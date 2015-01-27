@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.ads.timer.webservice.Models.Vertretungsplan.Vertretung;
+import de.ads.timer.webservice.Models.Vertretungsplan.VertretungsMerger;
 import de.ads.timer.webservice.Parser.VertretungplanParser;
 import de.ads.timer.webservice.persicetence.VertretungsRepository;
 
@@ -51,9 +52,8 @@ public class VertretungsController {
 				VertretungplanParser parser = new VertretungplanParser();
 				SAXParserImpl.newInstance(null).parse(file.getInputStream(),
 						parser);
-				// VertretungsMerger merger = new
-				// VertretungsMerger(parser.vertretungsList);
-				this.vertrtungsRep.save(parser.vertretungsList);
+				 VertretungsMerger merger = new VertretungsMerger(parser.vertretungsList, vertrtungsRep);
+				 merger.merge();
 				return new Integer(parser.vertretungsList.size()).toString();
 			} catch (Exception e) {
 				return "You failed to upload  => " + e.getMessage();

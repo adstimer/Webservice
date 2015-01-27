@@ -3,8 +3,10 @@ package de.ads.timer.webservice.Parser;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -38,6 +40,7 @@ public class VertretungplanParser extends DefaultHandler {
 		this.tempVal = new String(ch, start, length);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void endElement(String uri, String localName, String qName)
 			throws SAXException {
@@ -52,12 +55,12 @@ public class VertretungplanParser extends DefaultHandler {
 		}
 
 		if (qName.equalsIgnoreCase("div")) {
-			try {
-				this.date = new SimpleDateFormat("dd.MM.YYYY")
-						.parse(this.tempVal);
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
+			String[] values = tempVal.split(Pattern.quote("."));
+			this.date = new Date();
+			this.date.setDate(Integer.parseInt(values[0]));
+			this.date.setMonth(Integer.parseInt(values[1])-1);
+			String[] year = values[2].split(Pattern.quote(" "));
+			this.date.setYear(Integer.parseInt(year[0]) - 1900 );
 		}
 
 		if (qName.equalsIgnoreCase("td") && this.firstSkipped) {
