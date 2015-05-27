@@ -52,9 +52,12 @@ public class VertretungsController {
 				VertretungplanParser parser = new VertretungplanParser();
 				SAXParserImpl.newInstance(null).parse(file.getInputStream(),
 						parser);
-				 VertretungsMerger merger = new VertretungsMerger(parser.vertretungsList, vertrtungsRep);
-				 merger.merge();
-				return new Integer(parser.vertretungsList.size()).toString();
+				VertretungsMerger merger = new VertretungsMerger(parser,
+						this.vertrtungsRep);
+				merger.merge();
+				return "setsAdded: " + merger.setsAdded.toString()
+						+ "\n setsChanged: " + merger.setsChanged.toString()
+						+ "\n setsRemoved: " + merger.setsRemoved.toString();
 			} catch (Exception e) {
 				return "You failed to upload  => " + e.getMessage();
 			}

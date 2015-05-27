@@ -22,14 +22,12 @@ public class InitController {
 	@RequestMapping("vertretungen")
 	@ResponseBody
 	public String initVertretungen() {
-		List<String> stunden = new ArrayList<String>();
-		stunden.add("2");
 
 		List<String> klassen = new ArrayList<String>();
 		klassen.add("6a");
 
-		this.vertretungsRep.save(new Vertretung(klassen, stunden, "Pau", "D",
-				"115", "We", "EVA", new Date()));
+		this.vertretungsRep.save(new Vertretung(klassen, 2, "Pau", "D", "115",
+				"We", "EVA", new Date()));
 		return "ok";
 	}
 }

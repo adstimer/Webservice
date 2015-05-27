@@ -5,6 +5,7 @@ import java.util.Properties;
 import javax.servlet.MultipartConfigElement;
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.MultipartConfigFactory;
@@ -17,6 +18,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import com.notnoop.apns.APNS;
+import com.notnoop.apns.ApnsService;
 
 @Configuration
 @ComponentScan
@@ -32,6 +35,7 @@ public class Application {
 		MultipartConfigFactory factory = new MultipartConfigFactory();
 		factory.setMaxFileSize("2MB");
 		factory.setMaxRequestSize("2MB");
+		factory.setFileSizeThreshold("10MB");
 		return factory.createMultipartConfig();
 	}
 
@@ -66,8 +70,8 @@ public class Application {
 	public DataSource dataSource() {
 		MysqlDataSource dataSource = new MysqlDataSource();
 		dataSource.setUrl("jdbc:mysql://localhost:3306/adstimer");
-		dataSource.setUser("root");
-		dataSource.setPassword("rootpasswort");
+		dataSource.setUser("adstimer");
+		dataSource.setPassword("AberHallo4711");
 		return dataSource;
 	}
 
@@ -76,6 +80,12 @@ public class Application {
 		properties.put("eclipselink.weaving", "false");
 		// properties.put("eclipselink.logging.level", "ALL");
 		return properties;
+	}
+
+	@Bean(autowire = Autowire.BY_TYPE)
+	public ApnsService apnsService() {
+		return APNS.newService().withCert("/root/pushdev.p12", "AberHallo4711")
+				.withSandboxDestination().build();
 	}
 
 	// @Bean
