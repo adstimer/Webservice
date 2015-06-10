@@ -32,8 +32,8 @@ public class NotificationController {
 	public String registerWithTokenForKlasse(
 			@RequestBody Registration registration) {
 
-		if (this.registrationRep.exists(registration.token)) {
-			registration = this.registrationRep.findOne(registration.token);
+		if (this.registrationRep.exists(registration.pushToken)) {
+			registration = this.registrationRep.findOne(registration.pushToken);
 			registration.lastActivity = new Date();
 			this.registrationRep.save(registration);
 		} else {
@@ -53,7 +53,7 @@ public class NotificationController {
 
 		Collection<String> deviceTokens = new ArrayList<String>();
 		registrations.forEach((registration) -> {
-			deviceTokens.add(registration.token);
+			deviceTokens.add(registration.pushToken);
 		});
 		this.apnsService.push(deviceTokens, payload);
 

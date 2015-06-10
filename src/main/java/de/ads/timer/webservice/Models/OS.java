@@ -1,8 +1,8 @@
 package de.ads.timer.webservice.Models;
 
-public enum Device {
+public enum OS {
 	iOS, Android;
 
-	private Device() {
+	private OS() {
 	}
 }
