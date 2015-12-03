@@ -25,33 +25,27 @@ public class VertretungplanParser extends DefaultHandler {
 	public Date date;
 
 	@Override
-	public void startElement(String uri, String localName, String qName,
-			Attributes attributes) throws SAXException {
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 
-		if (qName.equalsIgnoreCase("table")
-				&& attributes.getValue("class").equalsIgnoreCase("mon_list")) {
+		if (qName.equalsIgnoreCase("table") && attributes.getValue("class").equalsIgnoreCase("mon_list")) {
 			this.currentIsDataTable = true;
 			this.firstRowSkipped = false;
-		} else if (this.currentIsDataTable && qName.equalsIgnoreCase("tr")
-				&& this.firstRowSkipped) {
+		} else if (this.currentIsDataTable && qName.equalsIgnoreCase("tr") && this.firstRowSkipped) {
 			this.tempVertretung = new Vertretung();
 			this.fieldCounter = 0;
-		} else if (qName.equalsIgnoreCase("div")
-				&& attributes.getValue("class").equals("mon_title")) {
+		} else if (qName.equalsIgnoreCase("div") && attributes.getValue("class").equals("mon_title")) {
 			this.currentIsDateDiv = true;
 		}
 	}
 
 	@Override
-	public void characters(char ch[], int start, int length)
-			throws SAXException {
+	public void characters(char ch[], int start, int length) throws SAXException {
 		this.tempVal = new String(ch, start, length);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public void endElement(String uri, String localName, String qName)
-			throws SAXException {
+	public void endElement(String uri, String localName, String qName) throws SAXException {
 
 		if (qName.equalsIgnoreCase("table")) {
 			this.currentIsDataTable = false;
@@ -65,28 +59,32 @@ public class VertretungplanParser extends DefaultHandler {
 				// Identität angelegt
 				this.stunden.forEach((stunde) -> {
 					this.tempVertretung.stunde = stunde;
-					this.vertretungsList.add(this.tempVertretung);
+					Vertretung copy = new Vertretung(tempVertretung.klassen, //Notwendig für Vertretungen mit mehreren Stunden, da sonst immer das selbe Objekt hinzugefügt wird
+							stunde, 
+							tempVertretung.vertreter, 
+							tempVertretung.fach, 
+							tempVertretung.raum, 
+							tempVertretung.absenz, 
+							tempVertretung.art, 
+							tempVertretung.datum);
+					this.vertretungsList.add(copy);
 				});
 
 				this.tempVertretung = null;
 			}
-		} else if (this.currentIsDataTable && qName.equalsIgnoreCase("td")
-				&& this.firstRowSkipped) {
+		} else if (this.currentIsDataTable && qName.equalsIgnoreCase("td") && this.firstRowSkipped) {
 			switch (this.fieldCounter) {
 			case 0:
 				List<String> klassen = new ArrayList<String>();
-				klassen.addAll(Arrays.asList(this.tempVal.split(Pattern
-						.quote(", "))));
+				klassen.addAll(Arrays.asList(this.tempVal.split(Pattern.quote(", "))));
 				this.tempVertretung.klassen = klassen;
 				break;
 			case 1:
 				this.stunden = new ArrayList<Integer>();
 				if (this.tempVal.contains("-")) {
 					// Stundenbereich
-					int vonStunde = Integer.parseInt(this.tempVal.split(Pattern
-							.quote(" - "))[0]);
-					int bisStunde = Integer.parseInt(this.tempVal.split(Pattern
-							.quote(" - "))[1]);
+					int vonStunde = Integer.parseInt(this.tempVal.split(Pattern.quote(" - "))[0]);
+					int bisStunde = Integer.parseInt(this.tempVal.split(Pattern.quote(" - "))[1]);
 
 					for (int i = vonStunde; i <= bisStunde; i++) {
 						this.stunden.add(i);

@@ -14,7 +14,7 @@ import javax.persistence.TemporalType;
 
 @Entity(name = "registration")
 @Table(name = "registration")
-public class Registration {	
+public class Registration {
 	@Id
 	public String authToken = Long.toString(UUID.randomUUID().getMostSignificantBits());
 	public String pushToken;

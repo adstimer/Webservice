@@ -16,6 +16,7 @@ import org.apache.commons.lang3.time.DateUtils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+
 @Entity(name = "vertretung")
 @Table(name = "vertretung")
 public class Vertretung {
@@ -36,14 +37,14 @@ public class Vertretung {
 	public String absenz;
 	public String art;
 	@Temporal(TemporalType.DATE)
-	@JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
+	@JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = "CET")
 	public Date datum;
 
 	public Vertretung() {
 	}
 
-	public Vertretung(List<String> klassen, Integer stunde, String vertreter,
-			String fach, String raum, String absenz, String art, Date datum) {
+	public Vertretung(List<String> klassen, Integer stunde, String vertreter, String fach, String raum, String absenz,
+			String art, Date datum) {
 		super();
 		this.klassen = klassen;
 		this.stunde = stunde;
@@ -57,11 +58,9 @@ public class Vertretung {
 
 	@Override
 	public String toString() {
-		return "Vertretung [id=" + this.id + ", klassen=" + this.klassen
-				+ ", stunde=" + this.stunde + ", vertreter=" + this.vertreter
-				+ ", fach=" + this.fach + ", raum=" + this.raum + ", absenz="
-				+ this.absenz + ", art=" + this.art + ", datum=" + this.datum
-				+ "]";
+		return "Vertretung [id=" + this.id + ", klassen=" + this.klassen + ", stunde=" + this.stunde + ", vertreter="
+				+ this.vertreter + ", fach=" + this.fach + ", raum=" + this.raum + ", absenz=" + this.absenz + ", art="
+				+ this.art + ", datum=" + this.datum + "]";
 	}
 
 	@Override
@@ -111,23 +110,15 @@ public class Vertretung {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((this.absenz == null) ? 0 : this.absenz.hashCode());
-		result = prime * result
-				+ ((this.art == null) ? 0 : this.art.hashCode());
-		result = prime * result
-				+ ((this.datum == null) ? 0 : this.datum.hashCode());
-		result = prime * result
-				+ ((this.fach == null) ? 0 : this.fach.hashCode());
+		result = prime * result + ((this.absenz == null) ? 0 : this.absenz.hashCode());
+		result = prime * result + ((this.art == null) ? 0 : this.art.hashCode());
+		result = prime * result + ((this.datum == null) ? 0 : this.datum.hashCode());
+		result = prime * result + ((this.fach == null) ? 0 : this.fach.hashCode());
 		result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
-		result = prime * result
-				+ ((this.klassen == null) ? 0 : this.klassen.hashCode());
-		result = prime * result
-				+ ((this.raum == null) ? 0 : this.raum.hashCode());
-		result = prime * result
-				+ ((this.stunde == null) ? 0 : this.stunde.hashCode());
-		result = prime * result
-				+ ((this.vertreter == null) ? 0 : this.vertreter.hashCode());
+		result = prime * result + ((this.klassen == null) ? 0 : this.klassen.hashCode());
+		result = prime * result + ((this.raum == null) ? 0 : this.raum.hashCode());
+		result = prime * result + ((this.stunde == null) ? 0 : this.stunde.hashCode());
+		result = prime * result + ((this.vertreter == null) ? 0 : this.vertreter.hashCode());
 		return result;
 	}
 

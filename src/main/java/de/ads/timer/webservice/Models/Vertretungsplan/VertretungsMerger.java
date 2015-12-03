@@ -12,23 +12,21 @@ public class VertretungsMerger {
 	VertretungsRepository vertretungsRep;
 	private List<Vertretung> newVertretungenList;
 	private Date date;
-	public Integer setsInFile = 0, setsInDatabase = 0, setsAdded = 0,
-			setsChanged = 0, setsRemoved = 0;
+	public Integer setsInFile = 0, setsInDatabase = 0, setsAdded = 0, setsChanged = 0, setsRemoved = 0;
+	private MergerInterface mergerInterface;
 
-	public VertretungsMerger(VertretungplanParser parser,
-			VertretungsRepository vertretungsRep) {
+	public VertretungsMerger(VertretungplanParser parser, VertretungsRepository vertretungsRep, MergerInterface delegate) {
 		this.newVertretungenList = parser.vertretungsList;
 		this.vertretungsRep = vertretungsRep;
 		this.date = parser.date;
+		this.mergerInterface = delegate;
 	}
 
 	public void merge() {
 		this.setsInFile = this.newVertretungenList.size();
 		for (Vertretung newVertretung : this.newVertretungenList) {
-			Vertretung oldVertretung = this.vertretungsRep
-					.findByIdentityCombination(newVertretung.datum,
-							newVertretung.klassen, newVertretung.absenz,
-							newVertretung.stunde);
+			Vertretung oldVertretung = this.vertretungsRep.findByIdentityCombination(newVertretung.datum,
+					newVertretung.klassen, newVertretung.absenz, newVertretung.stunde);
 			if (oldVertretung != null) {
 				// Eintrag in Bestehenden gefunden
 				if (!oldVertretung.isIdentical(newVertretung)) {
@@ -40,8 +38,7 @@ public class VertretungsMerger {
 			}
 		}
 
-		List<Vertretung> oldVertretungenList = this.vertretungsRep
-				.findByDatum(this.date);
+		List<Vertretung> oldVertretungenList = this.vertretungsRep.findByDatum(this.date);
 
 		this.setsInDatabase = oldVertretungenList.size();
 
@@ -52,18 +49,23 @@ public class VertretungsMerger {
 	private void didFindRemoved(Vertretung vertretung) {
 		this.setsRemoved++;
 		this.vertretungsRep.delete(vertretung);
+		
+		this.mergerInterface.didFindRemoved(vertretung);
 	}
 
 	private void didFindAdded(Vertretung vertretung) {
 		this.setsAdded++;
 		this.vertretungsRep.save(vertretung);
+		
+		this.mergerInterface.didFindAdded(vertretung);
 	}
 
-	private void didFindChanged(Vertretung oldVertretung,
-			Vertretung newVertretung) {
+	private void didFindChanged(Vertretung oldVertretung, Vertretung newVertretung) {
 		this.setsChanged++;
 
 		newVertretung.id = oldVertretung.id;
 		this.vertretungsRep.save(newVertretung);
+		
+		this.mergerInterface.didFindChanged(oldVertretung, newVertretung);
 	}
 }

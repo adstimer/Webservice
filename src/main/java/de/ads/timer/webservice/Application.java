@@ -84,8 +84,7 @@ public class Application {
 
 	@Bean(autowire = Autowire.BY_TYPE)
 	public ApnsService apnsService() {
-		return APNS.newService().withCert("/root/pushdev.p12", "AberHallo4711")
-				.withSandboxDestination().build();
+		return APNS.newService().withCert("/root/pushdev.p12", "AberHallo4711").withProductionDestination().build();
 	}
 
 	// @Bean

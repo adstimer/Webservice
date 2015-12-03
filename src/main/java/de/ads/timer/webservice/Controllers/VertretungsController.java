@@ -1,15 +1,16 @@
 package de.ads.timer.webservice.Controllers;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.ccil.cowan.tagsoup.jaxp.SAXParserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.datetime.DateFormatter;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,9 +18,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.ads.timer.webservice.Models.Registration;
-import de.ads.timer.webservice.Models.RegistrationToken;
 import de.ads.timer.webservice.Models.Vertretungsplan.Vertretung;
 import de.ads.timer.webservice.Models.Vertretungsplan.VertretungsMerger;
+import de.ads.timer.webservice.Notification.MessageController;
 import de.ads.timer.webservice.Parser.VertretungplanParser;
 import de.ads.timer.webservice.persicetence.RegistrationRepository;
 import de.ads.timer.webservice.persicetence.RegistrationTokenRepository;
@@ -30,84 +31,67 @@ import de.ads.timer.webservice.persicetence.VertretungsRepository;
 public class VertretungsController {
 
 	@Autowired
-	VertretungsRepository vertrtungsRep;
+	VertretungsRepository vertretungsRep;
 	@Autowired
 	RegistrationRepository registrationRep;
 	@Autowired
 	RegistrationTokenRepository registrationTokenRep;
+	@Autowired
+	MessageController messageController;
 
 	@Deprecated
 	@RequestMapping(value = "all", method = RequestMethod.GET)
 	@ResponseBody
 	public Iterable<Vertretung> getAll() {
-		return this.vertrtungsRep.findAll();
+		Iterable<Vertretung> vertretungen = this.vertretungsRep.findAll();
+		return vertretungen;
 	}
 
-	@RequestMapping(value = "register", method = RequestMethod.POST)
+	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
-	public String registerWithTokenForKlasse(@RequestBody Registration registration) {
-		if (!registration.klasse.isEmpty() && !registration.os.equals(null) && !registration.registrationToken.equals(null)) /*Field Validation*/{
-			if (RegistrationToken.isValid(registration.registrationToken.token, registrationTokenRep)) /*Token Validation */{
-				if (this.registrationRep.existsByPushToken(registration.pushToken)) {
-					// Bereits registriert
-					Registration oldRegistration = this.registrationRep.findOneByPushToken(registration.pushToken);
-					oldRegistration.lastActivity = new Date();
-					oldRegistration.klasse = registration.klasse;
-					this.registrationRep.save(oldRegistration);
-					
-					return oldRegistration.registrationToken.expireDate.toString();
-				} else {
-					// Neue Registrierung
-					registration.registrationToken = registrationTokenRep.findOne(registration.registrationToken.token);
-					this.registrationRep.save(registration);
-					
-					return registration.authToken;
+	public Map<Integer, List<Vertretung>> getByAuthToken(@RequestParam("authToken") String authToken)
+			throws ParseException {
+		if (!authToken.isEmpty() && this.registrationRep.exists(authToken)) {
+			Registration registration = this.registrationRep.findOne(authToken);
+			if (registration.registrationToken.isValid()) {
+				Map<Integer, List<Vertretung>> vertretungen = new HashMap<Integer, List<Vertretung>>();
+				List<Date> dates = this.vertretungsRep.findNextDays(new PageRequest(0, 3));
+				for (Integer i = 0; i < dates.size(); i++) {
+					vertretungen.put(i, this.vertretungsRep.findByAuthToken(authToken, dates.get(i)));
 				}
+				return vertretungen;
+
 			} else {
-				//Token nicht valid
-				return "Internal Server Error 0x0001";
+				// Token nicht mehr gültig
 			}
 		} else {
-			//Nicht alle notwendigen Angaben gemacht
-			return "Internal Server Error 0x0000";
+			// Kein Token angegeben oder nicht registriert
 		}
-
-		//return "ok";
+		return null;
 	}
-	
-//	@RequestMapping(method = RequestMethod.GET)
-//	@ResponseBody
-//	public Iterable<Vertretung> getByAuthToken(
-//			@RequestParam("authToken") String authToken) throws ParseException {
-//	}
-	
+
 	@Deprecated
 	@RequestMapping(value = "date", method = RequestMethod.GET)
 	@ResponseBody
-	public Iterable<Vertretung> getByDate(
-			@RequestParam("date") String dateString) throws ParseException {
+	public Iterable<Vertretung> getByDate(@RequestParam("date") String dateString) throws ParseException {
 		Date date = new SimpleDateFormat("dd.MM.yyyy").parse(dateString);
-		return this.vertrtungsRep.findByDatum(date);
+		return this.vertretungsRep.findByDatum(date);
 	}
-	
+
 	@RequestMapping(value = "/upload", method = RequestMethod.GET)
 	public String getFileUpload() {
 		return "vertretungsplanUpload";
 	}
 
 	@RequestMapping(value = "/upload", method = RequestMethod.POST)
-	public @ResponseBody String handleFileUpload(
-			@RequestParam("file") MultipartFile file) {
+	public @ResponseBody String handleFileUpload(@RequestParam("file") MultipartFile file) {
 		if (!file.isEmpty()) {
 			try {
 				VertretungplanParser parser = new VertretungplanParser();
-				SAXParserImpl.newInstance(null).parse(file.getInputStream(),
-						parser);
-				VertretungsMerger merger = new VertretungsMerger(parser,
-						this.vertrtungsRep);
+				SAXParserImpl.newInstance(null).parse(file.getInputStream(), parser);
+				VertretungsMerger merger = new VertretungsMerger(parser, this.vertretungsRep, this.messageController);
 				merger.merge();
-				return "setsAdded: " + merger.setsAdded.toString()
-						+ "\n setsChanged: " + merger.setsChanged.toString()
+				return "setsAdded: " + merger.setsAdded.toString() + "\n setsChanged: " + merger.setsChanged.toString()
 						+ "\n setsRemoved: " + merger.setsRemoved.toString();
 			} catch (Exception e) {
 				return "You failed to upload  => " + e.getMessage();
