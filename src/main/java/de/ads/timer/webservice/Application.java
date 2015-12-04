@@ -78,13 +78,13 @@ public class Application {
 	private Properties jpaProperties() {
 		Properties properties = new Properties();
 		properties.put("eclipselink.weaving", "false");
-		// properties.put("eclipselink.logging.level", "ALL");
+//		properties.put("eclipselink.logging.level", "ALL");
 		return properties;
 	}
 
 	@Bean(autowire = Autowire.BY_TYPE)
 	public ApnsService apnsService() {
-		return APNS.newService().withCert("/root/pushdev.p12", "AberHallo4711").withProductionDestination().build();
+		return APNS.newService().withCert("/root/pushdist.p12", "AberHallo4711").withProductionDestination().build();
 	}
 
 	// @Bean

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -28,7 +29,7 @@ public class Vertretung {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public Long id;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.EAGER)
 	public List<String> klassen;
 	public Integer stunde;
 	public String vertreter;

@@ -44,6 +44,7 @@ public class MessageController implements MergerInterface {
 	}
 
 	private void sendNotification(String text, List<String> klassen) {
+		if (klassen.size() <= 0) return;
 		String payload = APNS.newPayload().alertBody(text).badge(1).sound("default").build();
 		List<String> pushTokens = this.registrationRep.findPushTokensByKlassen(klassen, OS.iOS); 
 
