@@ -1,7 +1,6 @@
 package de.ads.timer.webservice.Notification;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import com.notnoop.apns.APNS;
 import com.notnoop.apns.ApnsService;
 
 import de.ads.timer.webservice.Models.OS;
-import de.ads.timer.webservice.Models.Registration;
 import de.ads.timer.webservice.Models.Vertretungsplan.MergerInterface;
 import de.ads.timer.webservice.Models.Vertretungsplan.Vertretung;
 import de.ads.timer.webservice.persicetence.RegistrationRepository;
@@ -21,9 +19,12 @@ public class MessageController implements MergerInterface {
 	
 	@Autowired
 	ApnsService apnsService;
-	
+	@Autowired
+	GCMNotificationService gcmService;
 	@Autowired
 	private RegistrationRepository registrationRep;
+	
+	private List<String> klassen = new ArrayList<String>();
 	
 	public MessageController()  {
 		
@@ -31,23 +32,46 @@ public class MessageController implements MergerInterface {
 
 	@Override
 	public void didFindAdded(Vertretung vertretung) {
-		sendNotification("Es gibt neue Vertretungen! \n Schau gleich mal nach", vertretung.klassen);
+		for (String klasse : vertretung.klassen) {
+			if (!klassen.contains(klasse)) {
+				klassen.add(klasse);
+			}
+		}
 	}
 
 	@Override
 	public void didFindRemoved(Vertretung vertretung) {
-		sendNotification("Eine deiner Stunden finden doch statt! \n Schau gleich mal nach", vertretung.klassen);
+		for (String klasse : vertretung.klassen) {
+			if (!klassen.contains(klasse)) {
+				klassen.add(klasse);
+			}
+		}
 	}
 	
 	public void didFindChanged(Vertretung oldVertretung, Vertretung newVertretung) {
-		sendNotification("Eine deiner Vertretungen hat sich geändert! \n Schau gleich mal nach", oldVertretung.klassen);		
+		for (String klasse : oldVertretung.klassen) {
+			if (!klassen.contains(klasse)) {
+				klassen.add(klasse);
+			}
+		}	
 	}
 
-	private void sendNotification(String text, List<String> klassen) {
+	private void sendNotification(String message, List<String> klassen) {
 		if (klassen.size() <= 0) return;
-		String payload = APNS.newPayload().alertBody(text).badge(1).sound("default").build();
+		String payload = APNS.newPayload().alertBody(message).badge(1).sound("default").build();
 		List<String> pushTokens = this.registrationRep.findPushTokensByKlassen(klassen, OS.iOS); 
 
 		this.apnsService.push(pushTokens, payload);
+		
+		pushTokens = this.registrationRep.findPushTokensByKlassen(klassen, OS.Android); 
+		this.gcmService.send(message, pushTokens);
+		
+		
+		
+	}
+
+	@Override
+	public void didFinish() {
+		sendNotification("Deine Vertretungen haben sich geändert! /n Schau gleich mal nach.", klassen);
 	}
 }

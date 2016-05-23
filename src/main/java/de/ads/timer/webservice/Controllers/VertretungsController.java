@@ -1,5 +1,6 @@
 package de.ads.timer.webservice.Controllers;
 
+import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,6 +23,8 @@ import de.ads.timer.webservice.Models.Vertretungsplan.Vertretung;
 import de.ads.timer.webservice.Models.Vertretungsplan.VertretungsMerger;
 import de.ads.timer.webservice.Notification.MessageController;
 import de.ads.timer.webservice.Parser.VertretungplanParser;
+import de.ads.timer.webservice.exception.ExpiredAuthToken;
+import de.ads.timer.webservice.exception.InValidAuthToken;
 import de.ads.timer.webservice.persicetence.RegistrationRepository;
 import de.ads.timer.webservice.persicetence.RegistrationTokenRepository;
 import de.ads.timer.webservice.persicetence.VertretungsRepository;
@@ -62,12 +65,13 @@ public class VertretungsController {
 				return vertretungen;
 
 			} else {
-				// Token nicht mehr gültig
+				// Token nicht mehr gültig CODE 412
+				throw new ExpiredAuthToken();
 			}
 		} else {
-			// Kein Token angegeben oder nicht registriert
+			// Kein Token angegeben oder nicht registriert CODE 403
+			throw new InValidAuthToken();
 		}
-		return null;
 	}
 
 	@Deprecated
@@ -88,6 +92,7 @@ public class VertretungsController {
 		if (!file.isEmpty()) {
 			try {
 				VertretungplanParser parser = new VertretungplanParser();
+				file.transferTo(new File("/usr/" + Long.toString(new Date().getTime())));
 				SAXParserImpl.newInstance(null).parse(file.getInputStream(), parser);
 				VertretungsMerger merger = new VertretungsMerger(parser, this.vertretungsRep, this.messageController);
 				merger.merge();

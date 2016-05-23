@@ -18,5 +18,8 @@ public interface RegistrationRepository extends CrudRepository<Registration, Str
 	public Boolean existsByPushToken(String pushToken);
 
 	public Registration findOneByPushToken(String pushToken);
+	
+	@Query("SELECT r.pushToken FROM registration r where r.os = :os AND NOT r.pushToken = ''")
+	public List<String> findPushTokenByOs(@Param("os") OS android);
 
 }

@@ -3,24 +3,25 @@ package de.ads.timer.webservice.Controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import de.ads.timer.webservice.persicetence.VertretungsRepository;
+import de.ads.timer.webservice.Models.OS;
+import de.ads.timer.webservice.Notification.GCMNotificationService;
+import de.ads.timer.webservice.persicetence.RegistrationRepository;
 
 @Controller
 @RequestMapping("init")
 public class InitController {
 
 	@Autowired
-	VertretungsRepository vertretungsRep;
+	RegistrationRepository regRep;
 
-//	@RequestMapping("vertretungen")
-//	@ResponseBody
-//	public String initVertretungen() {
-//
-//		List<String> klassen = new ArrayList<String>();
-//		klassen.add("6a");
-//
-//		this.vertretungsRep.save(new Vertretung(klassen, 2, "Pau", "D", "115", "We", "EVA", new Date()));
-//		return "ok";
-//	}
+	@RequestMapping("send")
+	@ResponseBody
+	public String initVertretungen() {
+
+		GCMNotificationService service = new GCMNotificationService();
+		service.send("Test", regRep.findPushTokenByOs(OS.Android));
+		return "ok";
+	}
 }

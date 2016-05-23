@@ -44,6 +44,8 @@ public class VertretungsMerger {
 
 		oldVertretungenList.removeIf(this.newVertretungenList::contains);
 		oldVertretungenList.forEach(this::didFindRemoved);
+		
+		this.mergerInterface.didFinish();
 	}
 
 	private void didFindRemoved(Vertretung vertretung) {
